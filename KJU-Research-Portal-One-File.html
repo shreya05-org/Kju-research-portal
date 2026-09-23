@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KJU Research Portal</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
+.header{background:#073b7a;color:white;padding:18px 6%;display:flex;align-items:center;gap:16px}
+.logo{width:52px;height:52px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#073b7a;font-weight:800;font-size:18px}
+.header h1{font-size:22px;margin:0}.header p{margin:4px 0 0;opacity:.85;font-size:13px}
+.container{max-width:1050px;margin:35px auto;padding:0 20px}
+.card{background:white;border-radius:18px;padding:28px;box-shadow:0 8px 30px #10204014;margin-bottom:22px}
+.login{max-width:520px;margin:60px auto;text-align:center}.login h2{margin-top:0;font-size:28px}
+.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer;font-size:15px}
+.google{background:white;border:1px solid #ccd3df;color:#172033;width:100%;box-shadow:0 2px 7px #00000010}
+.primary{background:#073b7a;color:white}.danger{background:#fff0f0;color:#a11;border:1px solid #f2c7c7}
+select,input{width:100%;padding:12px;border:1px solid #ccd3df;border-radius:9px;margin:7px 0 16px;font-size:15px}
+label{font-weight:700;font-size:14px}.role{display:flex;gap:10px;margin:20px 0}.role button{flex:1}
+.role .active{background:#073b7a;color:white}
+.hidden{display:none}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.badge{display:inline-block;padding:6px 10px;border-radius:20px;background:#eaf2ff;color:#073b7a;font-size:12px;font-weight:700}
+.item{border:1px solid #e0e5ed;border-radius:12px;padding:17px;margin:12px 0}
+.item h3{margin:0 0 8px;font-size:17px}.muted{color:#697386;font-size:13px}
+.status{font-weight:700}.status.submitted{color:#1769aa}.status.review{color:#9a6500}.status.accepted{color:#198754}.status.changes{color:#b42318}
+.note{background:#f7f9fc;border-left:4px solid #073b7a;padding:12px;margin:15px 0;font-size:13px;line-height:1.5}
+.small{font-size:12px;color:#697386}.footer{text-align:center;color:#7b8494;padding:25px;font-size:12px}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">KJU</div>
+  <div><h1>Kristu Jayanti University</h1><p>Research Paper Submission Portal</p></div>
+</header>
+
+<main class="container">
+<section id="login" class="card login">
+  <h2>Research Paper Portal</h2>
+  <p class="muted">For 3rd-year students and faculty</p>
+  <div class="role">
+    <button id="studentRole" class="btn active" onclick="setRole('student')">Student</button>
+    <button id="facultyRole" class="btn" onclick="setRole('faculty')">Faculty</button>
+  </div>
+  <button class="btn google" onclick="demoLogin()">🔵 &nbsp; Continue with Google</button>
+  <p class="small" style="margin-top:14px">Demo mode: use your Kristu Jayanti Google account when the portal is connected online.</p>
+</section>
+
+<section id="student" class="hidden">
+  <div class="card">
+    <div class="top"><div><span class="badge">STUDENT PORTAL</span><h2>Submit Research Paper</h2></div><button class="btn danger" onclick="logout()">Logout</button></div>
+    <div class="note">Upload your PDF to Google Drive first, set access to <b>Anyone with the link</b>, then paste the link below.</div>
+    <label>Student Name</label><input id="sname" placeholder="Your full name">
+    <label>KJU Email</label><input id="semail" placeholder="name@kristujayanti.com">
+    <label>Research Category</label>
+    <select id="category">
+      <option value="">Select category</option>
+      <option>HR</option><option>Finance</option><option>Marketing</option>
+      <option>Aviation</option><option>Business Analytics</option><option>Branding and Advertising</option>
+      <option>International Business</option><option>Retail Management</option><option>Tourism and Hospitality</option>
+    </select>
+    <label>Research Paper Title</label><input id="title" placeholder="Enter paper title">
+    <label>Google Drive PDF Link</label><input id="drive" placeholder="https://drive.google.com/...">
+    <button class="btn primary" onclick="submitPaper()">Submit Research Paper</button>
+  </div>
+  <div class="card"><h2>My Submissions</h2><div id="mySubs"><p class="muted">No submissions yet.</p></div></div>
+</section>
+
+<section id="faculty" class="hidden">
+  <div class="card">
+    <div class="top"><div><span class="badge">FACULTY PORTAL</span><h2>Research Submissions</h2></div><button class="btn danger" onclick="logout()">Logout</button></div>
+    <p class="muted">Review submissions and add remarks/status.</p>
+    <div id="allSubs"><p class="muted">No submissions yet.</p></div>
+  </div>
+</section>
+</main>
+<div class="footer">Kristu Jayanti University • Research Paper Submission Portal</div>
+
+<script>
+let role='student';
+const KEY='kju_demo_submissions';
+function setRole(r){
+ role=r;
+ document.getElementById('studentRole').classList.toggle('active',r==='student');
+ document.getElementById('facultyRole').classList.toggle('active',r==='faculty');
+}
+function demoLogin(){
+ document.getElementById('login').classList.add('hidden');
+ document.getElementById(role).classList.remove('hidden');
+ if(role==='student') renderStudent(); else renderFaculty();
+}
+function logout(){document.getElementById('student').classList.add('hidden');document.getElementById('faculty').classList.add('hidden');document.getElementById('login').classList.remove('hidden')}
+function getSubs(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function saveSubs(a){localStorage.setItem(KEY,JSON.stringify(a))}
+function submitPaper(){
+ const name=document.getElementById('sname').value.trim(), email=document.getElementById('semail').value.trim(),
+ cat=document.getElementById('category').value, title=document.getElementById('title').value.trim(), drive=document.getElementById('drive').value.trim();
+ if(!name||!email||!cat||!title||!drive){alert('Please fill in all fields.');return}
+ if(!email.toLowerCase().endsWith('@kristujayanti.com')){alert('Please use your @kristujayanti.com email.');return}
+ const a=getSubs();a.push({id:Date.now(),name,email,cat,title,drive,status:'Submitted',remarks:'',date:new Date().toLocaleString()});saveSubs(a);
+ document.getElementById('title').value='';document.getElementById('drive').value='';alert('Research paper submitted successfully!');renderStudent();
+}
+function renderStudent(){
+ const email=document.getElementById('semail').value.trim().toLowerCase(), a=getSubs().filter(x=>!email||x.email.toLowerCase()===email);
+ const box=document.getElementById('mySubs'); box.innerHTML=a.length?a.map(x=>card(x,false)).join(''):'<p class="muted">No submissions yet.</p>';
+}
+function renderFaculty(){document.getElementById('allSubs').innerHTML=getSubs().map(x=>card(x,true)).join('')||'<p class="muted">No submissions yet.</p>'}
+function card(x,faculty){
+ return `<div class="item"><h3>${esc(x.title)}</h3><div class="muted">${esc(x.name)} • ${esc(x.email)} • ${esc(x.cat)} • ${esc(x.date)}</div>
+ <p><a href="${esc(x.drive)}" target="_blank" rel="noopener">Open research paper</a></p>
+ <div>Status: <span class="status ${x.status.toLowerCase().replaceAll(' ','-')}">${esc(x.status)}</span></div>
+ ${x.remarks?`<p><b>Faculty remarks:</b> ${esc(x.remarks)}</p>`:''}
+ ${faculty?`<label>Update status</label><select id="st${x.id}"><option ${x.status==='Submitted'?'selected':''}>Submitted</option><option ${x.status==='Under Review'?'selected':''}>Under Review</option><option ${x.status==='Changes Required'?'selected':''}>Changes Required</option><option ${x.status==='Accepted'?'selected':''}>Accepted</option></select><label>Remarks</label><input id="rm${x.id}" value="${esc(x.remarks)}" placeholder="Enter remarks"><button class="btn primary" onclick="updateSub(${x.id})">Save Review</button>`:''}</div>`;
+}
+function updateSub(id){
+ const a=getSubs(),x=a.find(y=>y.id===id);if(!x)return;
+ x.status=document.getElementById('st'+id).value;x.remarks=document.getElementById('rm'+id).value;saveSubs(a);renderFaculty();
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+</script>
+</body>
+</html>
